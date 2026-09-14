@@ -14,6 +14,8 @@ const timerDisplay = document.getElementById('timer');
 const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const alarmSound = document.getElementById('alarm-sound');
+const switchSound = document.getElementById('switch-sound');
+const colorPicker = document.getElementById('bg-color');
 
 function updateDisplay() {
   const m = String(minutes).padStart(2, '0');
@@ -62,13 +64,70 @@ function resetTimer() {
 
 function setMode(mode) {
   currentMode = mode;
-  document.body.style.backgroundColor = modes[mode].color;
-  
+  const color = modes[mode].color;
+  document.body.style.backgroundColor = color;
+  colorPicker.value = color;
+
+  switchSound.currentTime = 0;
+  switchSound.play().catch(() => {});
+
   document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-  document.getElementById(`${mode.replace(/([A-Z])/g, '-$1').toLowerCase()}-btn`).classList.add('active');
+  const activeBtnId = mode === 'work' ? 'work-btn' : mode === 'shortBreak' ? 'short-break-btn' : 'long-break-btn';
+  document.getElementById(activeBtnId).classList.add('active');
 
   resetTimer();
 }
 
-// Initial setup
+function changeColor(newColor) {
+  document.body.style.backgroundColor = newColor;
+  modes[currentMode].color = newColor;
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+}
+
+async function togglePip() {
+  if ('documentPictureInPicture' in window) {
+    if (window.documentPictureInPicture.window) {
+      window.documentPictureInPicture.window.close();
+      return;
+    }
+    const app = document.getElementById('pomodoro-app');
+    const pipWindow = await window.documentPictureInPicture.requestWindow({
+      width: 380,
+      height: 380
+    });
+
+    [...document.styleSheets].forEach((styleSheet) => {
+      try {
+        const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join('');
+        const style = document.createElement('style');
+        style.textContent = cssRules;
+        pipWindow.document.head.appendChild(style);
+      } catch (e) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = styleSheet.href;
+        pipWindow.document.head.appendChild(link);
+      }
+    });
+
+    pipWindow.document.body.style.backgroundColor = getComputedStyle(document.body).backgroundColor;
+    pipWindow.document.body.appendChild(app);
+
+    pipWindow.addEventListener('pagehide', () => {
+      document.body.appendChild(app);
+    });
+  } else {
+    alert('Picture-in-Picture for HTML components is supported in Chrome or Edge.');
+  }
+}
+
 updateDisplay();
