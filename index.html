@@ -7,7 +7,17 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
+  <div class="container" id="pomodoro-app">
+    <div class="top-bar">
+      <label class="color-picker-label">
+        Color: <input type="color" id="bg-color" value="#ba4949" onchange="changeColor(this.value)">
+      </label>
+      <div class="view-buttons">
+        <button onclick="togglePip()">PiP</button>
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+      </div>
+    </div>
+
     <h1>Pomodoro Timer</h1>
     
     <div class="mode-buttons">
@@ -26,6 +36,7 @@
   </div>
 
   <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+  <audio id="switch-sound" src="https://actions.google.com/sounds/v1/ui/button_click.ogg" preload="auto"></audio>
   <script src="script.js"></script>
 </body>
 </html>
